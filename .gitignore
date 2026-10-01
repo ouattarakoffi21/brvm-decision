@@ -1,0 +1,5 @@
+donnees_perso/
+donnees/brvm.db
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
