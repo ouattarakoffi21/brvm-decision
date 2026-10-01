@@ -25,6 +25,7 @@ COLONNES_COURS = ["date", "ticker", "ouverture", "haut", "bas", "cloture",
 SUFFIXE_PAYS = {"C": ".ci", "S": ".sn", "B": ".bj", "F": ".bf", "M": ".ml",
                 "N": ".ne", "T": ".tg", "G": ".gw"}
 URL_SIKA = "https://www.sikafinance.com/api/general/GetHistos"
+DOSSIER_COMPLEMENT = RACINE / "donnees" / "complement"
 
 
 # ---------------------------------------------------------------- téléchargement
@@ -179,8 +180,11 @@ def charger_sources(cfg: dict) -> dict[str, pd.DataFrame]:
 
     cours = _lire_csv(arch / "cours.csv", parse_dates=["date"])
     manuels = [lire_fichier(p) for p in sorted(man.glob("cours_*.*"))]
-    if manuels:
-        cours = pd.concat([*manuels, cours], ignore_index=True)
+    # complément Sikafinance : priorité la plus basse, il ne fait que combler
+    # les séances que l'archive n'a pas encore publiées
+    complements = [lire_fichier(p) for p in sorted(DOSSIER_COMPLEMENT.glob("cours_*.csv"))]
+    if manuels or complements:
+        cours = pd.concat([*manuels, cours, *complements], ignore_index=True)
     cours = (cours.drop_duplicates(["date", "ticker"], keep="first")
                   .sort_values(["ticker", "date"]).reset_index(drop=True))
 
@@ -233,13 +237,13 @@ def mettre_a_jour(cfg: dict, avec_sikafinance: bool = True) -> dict:
         derniere_vue = pd.to_datetime(actifs["derniere_vue"])
         tickers = actifs.loc[derniere_vue >= derniere_vue.max() - pd.Timedelta(days=30),
                              "ticker"].tolist()
-        if (date.today() - src["cours"]["date"].max().date()).days > 1:
+        # dès qu'il manque au moins une séance par rapport à aujourd'hui
+        if src["cours"]["date"].max().date() < date.today():
             cours, rap = completer_avec_sikafinance(cfg, src["cours"], tickers)
             nouvelles = cours[cours["date"] > src["cours"]["date"].max()]
             if len(nouvelles):
-                man = chemin(cfg, "dossier_manuel")
-                man.mkdir(parents=True, exist_ok=True)
-                nouvelles.to_csv(man / f"cours_sikafinance_{date.today():%Y%m%d}.csv",
+                DOSSIER_COMPLEMENT.mkdir(parents=True, exist_ok=True)
+                nouvelles.to_csv(DOSSIER_COMPLEMENT / f"cours_sikafinance_{date.today():%Y%m%d}.csv",
                                  index=False)
             rapport["sikafinance"] = rap
     return rapport

@@ -3,3 +3,4 @@ donnees/brvm.db
 .streamlit/secrets.toml
 __pycache__/
 *.pyc
+donnees/complement/

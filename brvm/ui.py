@@ -8,6 +8,7 @@ import pandas as pd
 import streamlit as st
 
 from .config import _valeur_toml, charger_config, chemin, fusionner
+from .donnees import DOSSIER_COMPLEMENT
 from .moteur import decisions_du_jour, preparer_tout
 
 AVERTISSEMENT = ("Outil d'aide à la décision, pas un conseil en investissement. "
@@ -76,8 +77,9 @@ def verrou() -> None:
 
 def _empreinte(cfg: dict) -> str:
     """Change quand la config ou les fichiers de données changent (invalide le cache)."""
-    fichiers = sorted(p.stat().st_mtime for dossier in ("dossier_archive", "dossier_manuel")
-                      for p in chemin(cfg, dossier).glob("*.*"))
+    dossiers = [chemin(cfg, d) for d in ("dossier_archive", "dossier_manuel")]
+    dossiers.append(DOSSIER_COMPLEMENT)
+    fichiers = sorted(p.stat().st_mtime for dossier in dossiers for p in dossier.glob("*.*"))
     return hashlib.md5((json.dumps(cfg, sort_keys=True, default=str)
                         + str(fichiers)).encode()).hexdigest()
 
@@ -128,6 +130,11 @@ def points(x) -> str:
 def bandeau_donnees(prep: dict) -> None:
     derniere = prep["cours"]["date"].max()
     age = (pd.Timestamp.today().normalize() - derniere).days
-    msg = f"Données au **{derniere:%d/%m/%Y}** (dernière séance archivée)."
-    (st.info if age <= 4 else st.error)(
-        msg + ("" if age <= 4 else " Données périmées : mets-les à jour dans « Paramètres »."))
+    msg = f"Données au **{derniere:%d/%m/%Y}** (dernière séance disponible)."
+    if age > 4:
+        st.error(msg + " Données périmées : mets-les à jour dans « Paramètres ».")
+    elif age >= 1:
+        st.info(msg + " La séance du jour est ajoutée chaque soir vers 21 h (heure d'Abidjan) : "
+                "relance la mise à jour après cette heure.")
+    else:
+        st.info(msg)
