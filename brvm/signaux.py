@@ -38,7 +38,11 @@ def regles_sortie(position: pd.Series, rt_serie: pd.Series, date, tend: pd.Serie
     depuis = rt_serie[(rt_serie.index >= position["date_achat"]) & (rt_serie.index <= date)]
     raisons = []
     if len(depuis) < 2:
-        return "CONSERVER", ["achat trop récent pour juger"]
+        raisons = ["achat trop récent pour juger la performance"]
+        if pd.notna(score) and score < s["score_sortie"]:
+            raisons.append(f"attention : score {score:.0f} < {s['score_sortie']}, ce titre ne remplit "
+                           "pas les critères de l'outil (signal de vente dès la prochaine séance)")
+        return "CONSERVER", raisons
     perf = depuis.iloc[-1] / depuis.iloc[0] - 1
     repli = depuis.iloc[-1] / depuis.max() - 1
     if repli <= -s["stop_suiveur"]:
