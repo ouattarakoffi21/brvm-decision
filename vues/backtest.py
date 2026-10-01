@@ -61,7 +61,9 @@ if st.button("Lancer le backtest", type="primary") or "bt_ok" in st.session_stat
     st.subheader("Verdict sur la période de test")
     st.caption(f"Du {test.valeur.index[0]:%d/%m/%Y} au {test.valeur.index[-1]:%d/%m/%Y}, avec "
                f"les paramètres retenus sur la période d'optimisation : score minimum "
-               f"{r['choisi'][0]:.0f}, stop suiveur {r['choisi'][1]:.0%}.")
+               f"{r['choisi'][0]:.0f}, stop suiveur {r['choisi'][1]:.0%}. Capital simulé : "
+               f"{ui.fcfa(cfg['risque']['capital_fcfa'])} (frais fixes compris : plus le capital "
+               "est petit, plus ils pèsent).")
     c = st.columns(3)
     c[0].metric("Stratégie, rendement annualisé", ui.pct(test.stats["rendement_annualise"]),
                 ui.points(test.stats["rendement_annualise"] - ref_test.stats["rendement_annualise"])
@@ -69,8 +71,8 @@ if st.button("Lancer le backtest", type="primary") or "bt_ok" in st.session_stat
     c[1].metric("Référence (tous les titres liquides)", ui.pct(ref_test.stats["rendement_annualise"]))
     c[2].metric("Portefeuilles au hasard battus", f"{part * 100:.0f} %")
     if part >= 0.9:
-        st.success("La stratégie fait mieux que 90 % des portefeuilles tirés au hasard sur la "
-                   "période de test.")
+        st.success(f"La stratégie fait mieux que {part * 100:.0f} % des portefeuilles tirés au "
+                   "hasard sur la période de test.")
     elif part >= 0.5:
         st.info("La stratégie fait mieux que la moitié des tirages au hasard, sans s'en "
                 "détacher nettement : l'avantage n'est pas démontré.")
