@@ -1,6 +1,101 @@
-[theme]
-base = "light"
-primaryColor = "#1F6F43"
+# ==========================================================
+# Paramètres de l'outil d'aide à la décision BRVM
+# Toutes les valeurs sont modifiables ici ou dans la page « Paramètres ».
+# ==========================================================
 
-[server]
-headless = true
+[donnees]
+# Archive publique (licence MIT) mise à jour chaque jour de séance
+url_archive = "https://raw.githubusercontent.com/blakro/brvm/main/data"
+dossier_archive = "donnees/archive"
+dossier_manuel = "donnees/manuel"
+base_sqlite = "donnees/brvm.db"
+
+[frais]
+# Grille Matha Securities (conditions générales de tarification) :
+# commission SGI par tranches cumulatives de montant transigé.
+sgi_tranches_plafond_fcfa = [500_000_000, 1_500_000_000]
+sgi_tranches_taux = [0.0080, 0.0060, 0.0040]
+# Commissions de marché publiées par la BRVM (acheteur et vendeur)
+commission_brvm = 0.0020
+commission_dcbr = 0.0010
+# Taxes (TAF) et frais non détaillés dans les documents publics :
+# estimation pour atteindre le coût total d'environ 1,4 % par ordre
+# relevé par Richbourse. À REMPLACER par le taux réel lu sur ton
+# premier avis d'opéré Matha Securities.
+frais_complementaires_estimes = 0.0030
+# Conservation : 0,25 % par an de la valeur du portefeuille,
+# prélevé chaque trimestre ; forfait bourse en ligne annuel.
+conservation_annuelle = 0.0025
+bourse_en_ligne_annuel_fcfa = 10_000
+
+[qualite]
+# Au-delà du plafond de variation journalière, un saut est suspect.
+seuil_saut = 0.10
+# Nombre de séances pour juger si un saut se résorbe (erreur ponctuelle).
+fenetre_retour = 5
+# Tolérance pour reconnaître une division du nominal (rapport entier).
+tolerance_division = 0.08
+# Séances pendant lesquelles un titre reste suspendu après un saut inexpliqué.
+suspension_apres_saut = 60
+# Un dividende supérieur à ce pourcentage du cours est signalé.
+dividende_suspect = 0.15
+# Un historique plus ancien que ce nombre de jours est jugé périmé.
+fraicheur_max_jours = 7
+
+[liquidite]
+fenetre_seances = 60
+# Seuil calibré sur la taille d'une ligne (capital / nombre de lignes) :
+# avec 1 M FCFA échangés par séance et 20 % maximum par jour, une ligne
+# de 600 000 FCFA se construit ou se revend en 3 à 5 séances.
+montant_median_min_fcfa = 1_000_000
+part_seances_min = 0.80
+# Une position ne doit pas dépasser cette part du montant échangé
+# médian d'une séance (sinon difficile à revendre).
+part_max_volume_journalier = 0.20
+# Nombre de séances acceptées pour construire ou solder une ligne.
+seances_construction = 5
+
+[fondamental]
+# Pondérations du score composite (renormalisées selon les données disponibles)
+poids_rendement = 0.40
+poids_regularite = 0.30
+poids_per = 0.15
+poids_distribution = 0.10
+poids_endettement = 0.05
+annees_regularite = 5
+# Taux de distribution au-delà duquel le dividende est jugé non couvert
+distribution_max = 1.00
+
+[signaux]
+mm_courte = 50
+mm_longue = 150
+momentum_seances = 126
+score_achat_min = 60
+score_sortie = 40
+stop_suiveur = 0.15
+objectif_gain = 0.40
+alerte_detachement_jours = 15
+
+[filtres]
+conformite_islamique = false
+# "sectoriel" : exclusion des activités non conformes seulement.
+# "strict" : exige en plus des ratios AAOIFI vérifiés sur données saisies.
+mode_conformite = "sectoriel"
+ratio_dettes_max = 0.30
+ratio_tresorerie_interet_max = 0.30
+ratio_revenus_non_conformes_max = 0.05
+
+[risque]
+capital_fcfa = 5_000_000
+nombre_lignes_cible = 8
+nombre_lignes_min = 5
+poids_max_ligne = 0.20
+poids_max_secteur = 0.40
+
+[backtest]
+debut = "2016-01-01"
+fin_optimisation = "2021-12-31"
+frequence = "trimestrielle"
+tirages_hasard = 100
+graine = 42
+delai_execution_max = 10
