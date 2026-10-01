@@ -7,7 +7,7 @@ import json
 import pandas as pd
 import streamlit as st
 
-from .config import charger_config, chemin
+from .config import _valeur_toml, charger_config, chemin, fusionner
 from .moteur import decisions_du_jour, preparer_tout
 
 AVERTISSEMENT = ("Outil d'aide à la décision, pas un conseil en investissement. "
@@ -18,11 +18,40 @@ COULEURS_ACTION = {"VENDRE": "🔴", "ALLÉGER": "🟠", "ACHAT": "🟢", "CONSE
                    "SURVEILLER": "🟡", "NEUTRE": "⚪", "ÉCARTÉ": "⚫"}
 
 
+def config_active() -> dict:
+    """config.toml, surchargée par la section [config] des secrets Streamlit.
+
+    En ligne, le disque est effacé à chaque redémarrage : les réglages
+    personnels (capital, seuils, filtres) se conservent dans les secrets.
+    """
+    cfg = charger_config()
+    try:
+        surcharge = st.secrets.get("config")
+        if surcharge:
+            cfg = fusionner(cfg, {s: dict(v) for s, v in surcharge.items()})
+    except Exception:  # noqa: BLE001 - pas de secrets en local
+        pass
+    return cfg
+
+
+def texte_secrets_config(cfg: dict) -> str:
+    """Section [config] à coller dans les secrets : seuls les réglages modifiés."""
+    base = charger_config()
+    lignes = []
+    for section, valeurs in cfg.items():
+        modifs = {k: v for k, v in valeurs.items() if base.get(section, {}).get(k) != v}
+        if modifs:
+            lignes.append(f"[config.{section}]")
+            lignes += [f"{k} = {_valeur_toml(v)}" for k, v in modifs.items()]
+            lignes.append("")
+    return "\n".join(lignes)
+
+
 def page(titre: str) -> dict:
     """En-tête commun : configuration, verrou, avertissement. Renvoie la config active."""
     verrou()
     if "cfg" not in st.session_state:
-        st.session_state["cfg"] = charger_config()
+        st.session_state["cfg"] = config_active()
     st.title(titre)
     st.caption("⚠️ " + AVERTISSEMENT)
     return st.session_state["cfg"]

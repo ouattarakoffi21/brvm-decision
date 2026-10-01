@@ -7,7 +7,7 @@ from brvm import ui
 from brvm.config import chemin, fusionner, sauvegarder_config
 from brvm.donnees import lire_fichier, mettre_a_jour, modele_fondamentaux
 from brvm.filtres import DOSSIER_PERSO, _secret, lire_exclusions
-from brvm.risque import taux_aller_retour
+from brvm.risque import lire_portefeuille, taux_aller_retour
 
 cfg = ui.page("Paramètres")
 onglets = st.tabs(["Stratégie", "Frais", "Filtres personnels", "Données", "Qualité des données"])
@@ -168,7 +168,27 @@ suspension). Pour un dividende, ajoute la ligne corrigée dans
 """)
 
 st.divider()
-if st.button("Enregistrer tous les paramètres dans config.toml"):
+st.subheader("Conserver mes réglages")
+en_ligne = _secret("portefeuille_csv") is not None or _secret("exclusions_csv") is not None
+st.markdown("""
+**En ligne**, tout ce qui est enregistré dans l'application est effacé au redémarrage du
+serveur. Pour garder tes réglages, copie le texte ci-dessous **à la fin** de tes Secrets
+(« Gérer l'application », puis Settings, puis Secrets), sous la ligne du mot de passe.
+""")
+texte = ui.texte_secrets_config(st.session_state["cfg"])
+excl_txt = lire_exclusions()
+ptf_txt = lire_portefeuille()
+perso = []
+if len(excl_txt):
+    perso.append('exclusions_csv = """' + excl_txt.to_csv(index=False) + '"""')
+if len(ptf_txt):
+    ptf_txt = ptf_txt.assign(date_achat=pd.to_datetime(ptf_txt["date_achat"]).dt.strftime("%Y-%m-%d"))
+    perso.append('portefeuille_csv = """' + ptf_txt.to_csv(index=False) + '"""')
+if perso:
+    texte = "[perso]\n" + "\n".join(perso) + "\n\n" + texte
+st.code(texte or "# Aucun réglage modifié : rien à copier.", language="toml")
+st.caption("Le mot de passe doit rester sur la toute première ligne des Secrets, au-dessus de ce "
+           "texte. Si une section [perso] existe déjà dans tes Secrets, remplace-la par celle-ci.")
+if not en_ligne and st.button("Enregistrer tous les paramètres dans config.toml (usage local)"):
     sauvegarder_config(st.session_state["cfg"])
-    st.success("config.toml mis à jour. En ligne, cette sauvegarde est perdue au redémarrage : "
-               "reporte les valeurs dans ton dépôt.")
+    st.success("config.toml mis à jour sur cet ordinateur.")
