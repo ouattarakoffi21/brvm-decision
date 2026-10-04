@@ -1,5 +1,22 @@
 """Point d'entrée : streamlit run app.py"""
+import importlib
+import sys
+import types
+from pathlib import Path
+
 import streamlit as st
+
+# Après une mise à jour du code en ligne, Streamlit peut garder en mémoire l'ancienne
+# version des modules brvm : on les recharge dès qu'un fichier a changé.
+_ORDRE = ["config", "donnees", "qualite", "liquidite", "fondamental", "filtres", "signaux",
+          "risque", "moteur", "backtest", "recherche", "direct", "ui"]
+_etat = sys.modules.setdefault("_brvm_version", types.ModuleType("_brvm_version"))
+_version = max(p.stat().st_mtime for p in (Path(__file__).parent / "brvm").glob("*.py"))
+if getattr(_etat, "version", None) not in (None, _version):
+    for nom in _ORDRE:
+        if f"brvm.{nom}" in sys.modules:
+            importlib.reload(sys.modules[f"brvm.{nom}"])
+_etat.version = _version
 
 st.set_page_config(page_title="BRVM Décision", page_icon="assets/icone.svg", layout="wide")
 st.logo("assets/logo.svg", icon_image="assets/icone.svg", size="large")
