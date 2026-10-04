@@ -252,6 +252,31 @@ def decisions(cfg: dict) -> dict:
     return decisions_du_jour(donnees(cfg), cfg)
 
 
+@st.cache_data(show_spinner="Analyse des comptes publiés et des cours...")
+def _analyse_recherche(empreinte: str, cfg_json: str):
+    from .filtres import lire_fondamentaux_saisis
+    from .recherche import analyser
+    c = json.loads(cfg_json)
+    res = decisions(c)
+    return analyser(donnees(c), res, c, lire_fondamentaux_saisis()), res["date"]
+
+
+def analyse_recherche(cfg: dict):
+    """Rapport de recherche (toutes les valeurs) et date des données. Le profil n'y entre pas."""
+    cle = {k: v for k, v in cfg.items() if k != "profil"}
+    return _analyse_recherche(_empreinte(cle), json.dumps(cle, default=str))
+
+
+def carte_alerte(t: str, titre: str, detail, ton: str, societe: str = "", delai: int = 0) -> None:
+    details = detail if isinstance(detail, list) else [detail]
+    st.markdown(
+        f'<div class="carte {ton}" style="animation-delay:{delai}ms"><div class="tete">'
+        f'<span class="chip">{html.escape(titre)}</span><span class="tick">{html.escape(t)}</span>'
+        f'<span class="nom">{html.escape(societe)}</span></div>'
+        f'<ul>{"".join(f"<li>{html.escape(d)}</li>" for d in details)}</ul></div>',
+        unsafe_allow_html=True)
+
+
 def carte_signal(t: str, r, delai: int = 0) -> None:
     """Carte lisible sur téléphone : signal, chiffres clés et justification complète."""
     ton = TONS_ACTION[r["action"]]

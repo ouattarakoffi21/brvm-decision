@@ -107,6 +107,15 @@ Le ratio dette / capitaux propres n'est pas publié par la source : il reste « 
 saisis les états financiers. Le top 10 dépend de ton profil (tolérance au risque, montant,
 horizon, secteurs) : les pondérations de chaque profil sont affichées en bas de la page.
 
+### 9. La séance en direct
+Pendant la séance, la page lit les cours sur Sikafinance (léger différé possible), les ajoute
+comme une séance provisoire et réapplique exactement les règles des signaux officiels. Elle
+signale : une vente déclenchée par le cours du moment (stop, retournement), un signal qui change,
+un titre à l'achat entré dans sa zone d'entrée ou tombé en dessous, un titre proche du plafond
+de variation de la séance, un volume au moins 3 fois supérieur à l'habitude. Ce ne sont pas des
+prévisions : les signaux officiels restent ceux calculés sur la clôture. Un cours lu qui
+varierait de plus de 12 % est ignoré, car il dépasse ce que la BRVM autorise en une séance.
+
 ### Ce que l'outil ne fait pas
 Il ne passe aucun ordre, ne prévoit pas l'avenir et ne remplace pas la lecture des états
 financiers ni l'avis d'un conseiller agréé.

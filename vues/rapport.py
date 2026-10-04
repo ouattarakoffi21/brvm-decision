@@ -1,13 +1,11 @@
 """Rapport de recherche : top 10 adapté au profil et fiche détaillée par valeur."""
 import copy
-import json
 
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 from brvm import recherche, ui
-from brvm.filtres import lire_fondamentaux_saisis
 from brvm.risque import taux_aller_retour
 
 cfg = ui.page("Rapport de recherche",
@@ -18,15 +16,7 @@ prep = ui.donnees(cfg)
 ui.bandeau_donnees(prep)
 
 
-@st.cache_data(show_spinner="Analyse des comptes publiés et des cours...")
-def _analyse(empreinte: str, cfg_json: str) -> tuple[pd.DataFrame, pd.Timestamp]:
-    c = json.loads(cfg_json)
-    res = ui.decisions(c)
-    return recherche.analyser(ui.donnees(c), res, c, lire_fondamentaux_saisis()), res["date"]
-
-
-cle = {k: v for k, v in cfg.items() if k != "profil"}  # changer de profil ne relance pas l'analyse
-df, date = _analyse(ui._empreinte(cle), json.dumps(cle, default=str))
+df, date = ui.analyse_recherche(cfg)
 
 # ------------------------------------------------------------------ profil
 profil = copy.deepcopy(cfg.get("profil", {"tolerance": "équilibré", "montant_fcfa": 500_000,

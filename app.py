@@ -9,6 +9,7 @@ navigation = st.navigation({
         st.Page("vues/accueil.py", title="Tableau de bord", icon=":material/space_dashboard:",
                 default=True),
         st.Page("vues/signaux.py", title="Signaux du jour", icon=":material/traffic:"),
+        st.Page("vues/direct.py", title="Séance en direct", icon=":material/sensors:"),
         st.Page("vues/rapport.py", title="Rapport de recherche", icon=":material/query_stats:"),
     ],
     "Suivre": [

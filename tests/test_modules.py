@@ -211,3 +211,27 @@ def test_selection_profil_filtre_risque_et_secteur(cfg):
     assert list(recherche.selection_profil(df, profil, cfg).index) == ["X"]  # Y trop risqué, Z écarté
     profil.update(tolerance="dynamique", secteurs=["B"])
     assert list(recherche.selection_profil(df, profil, cfg).index) == ["Y"]
+
+
+def test_seance_directe_lit_la_page_et_ajoute_une_seance(cfg):
+    from brvm import direct
+    page = ("<table><thead><tr><th>Nom</th><th>Ouverture</th><th>+Haut</th><th>+Bas</th>"
+            "<th>Volume (titres)</th><th>Volume (XOF)</th><th>Dernier</th><th>Variation</th></tr>"
+            "</thead><tbody>" + "".join(
+                f'<tr><td><a href="/marches/cotation_{t}.ci">{t} SA</a></td><td>1 000</td>'
+                f"<td>1 050</td><td>990</td><td>10</td><td>10 500</td><td>1 050</td>"
+                f"<td>-1.20%</td></tr>" for t in ["AAA", "BBB", "CCC", "DDD", "EEE"]) + "</tbody></table>")
+    cot = direct.analyser_page(page)
+    assert list(cot["ticker"]) == ["AAA", "BBB", "CCC", "DDD", "EEE"]
+    assert cot["dernier"].iloc[0] == 1050 and cot["variation_source"].iloc[0] == pytest.approx(-0.012)
+    prix = {t: [1000.0] * 200 for t in ["AAA", "BBB", "CCC", "DDD", "EEE"]}
+    c0 = cours_synthetiques(prix).assign(indice_rt=lambda d: d["cloture"], suspendu=False)
+    mat = liquidite.construire_matrices(c0)
+    prep = {"cours": c0, "matrices": mat, "liquidite": liquidite.liquidite(mat, cfg),
+            "indicateurs": signaux.indicateurs(mat["rt"], cfg)}
+    demain = mat["cloture"].index[-1] + pd.Timedelta(days=1)
+    p2, c = direct.prep_avec_seance(prep, cot, demain, cfg)
+    assert p2["matrices"]["cloture"].index[-1] == demain
+    assert p2["matrices"]["cloture"].loc[demain, "AAA"] == 1050
+    assert c.loc["AAA", "variation"] == pytest.approx(0.05)
+    assert direct.prep_avec_seance(prep, cot, mat["cloture"].index[0], cfg)[0] is None
