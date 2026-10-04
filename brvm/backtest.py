@@ -33,6 +33,8 @@ class Parametres:
     aleatoire: bool = False
     tout_l_univers: bool = False   # référence : tous les titres admis, à poids égaux
     graine: int = 0
+    objectif_gain: float | None = None  # allège la moitié de la ligne au-delà de ce gain
+    part_allegee: float = 0.5
 
 
 @dataclass
@@ -123,7 +125,7 @@ def simuler(ctx: dict, cfg: dict, p: Parametres, debut=None, fin=None) -> Result
                 continue
             plafond = lq["part_max_volume_journalier"] * v_jour
             if o["sens"] == "vente" and t in pos:
-                q = min(pos[t]["q"], int(plafond / px))
+                q = min(o.get("q", pos[t]["q"]), pos[t]["q"], int(plafond / px))
                 if q <= 0:
                     o["age"] += 1
                     if o["age"] <= cfg["backtest"]["delai_execution_max"]:
@@ -140,8 +142,12 @@ def simuler(ctx: dict, cfg: dict, p: Parametres, debut=None, fin=None) -> Result
                 v["q"] -= q
                 v["cout"] *= (1 - part)
                 v["div"] *= (1 - part)
+                if "q" in o:
+                    o["q"] -= q
                 if v["q"] == 0:
                     del pos[t]
+                elif o.get("q", 1) <= 0:
+                    pass  # allègement terminé
                 else:
                     o["age"] += 1
                     restants.append(o)
@@ -161,7 +167,7 @@ def simuler(ctx: dict, cfg: dict, p: Parametres, debut=None, fin=None) -> Result
                     pos[t]["cout"] += montant + f
                 else:
                     pos[t] = {"q": q, "cout": montant + f, "date": d, "pic": rt.at[d, t],
-                              "div": 0.0}
+                              "div": 0.0, "rt0": rt.at[d, t], "allege": False}
                 ops.append((d, t, "achat", q, px, f, np.nan, o["motif"]))
                 # ligne construite en plusieurs séances si la liquidité l'impose
                 o["montant"] -= montant + f
@@ -208,6 +214,13 @@ def simuler(ctx: dict, cfg: dict, p: Parametres, debut=None, fin=None) -> Result
                     motif = "retournement"
                 if motif:
                     ordres.append({"ticker": t, "sens": "vente", "age": 0, "motif": motif})
+                elif (p.objectif_gain is not None and not pos[t]["allege"]
+                      and rt.at[d, t] / pos[t]["rt0"] - 1 >= p.objectif_gain):
+                    q = int(pos[t]["q"] * p.part_allegee)
+                    if q > 0:
+                        pos[t]["allege"] = True
+                        ordres.append({"ticker": t, "sens": "vente", "age": 0, "q": q,
+                                       "motif": "objectif de gain"})
             partants = {o["ticker"] for o in ordres if o["sens"] == "vente"}
             cible = len(elig) if p.tout_l_univers else n_cible
             places = cible - (len(pos) - len(partants & set(pos)))
