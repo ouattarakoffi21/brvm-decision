@@ -1,6 +1,25 @@
 [theme]
 base = "light"
-primaryColor = "#1F6F43"
+primaryColor = "#2B3A8C"
+backgroundColor = "#EEF1F6"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#141B2D"
+borderColor = "#DCE1EA"
+linkColor = "#2B3A8C"
+baseRadius = "10px"
+greenColor = "#1C8048"
+redColor = "#BE3B26"
+orangeColor = "#B97A12"
+blueColor = "#2C64C2"
+font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+headingFont = "Big Shoulders Display:https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&display=swap"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+dataframeHeaderBackgroundColor = "#F6F8FB"
+chartCategoricalColors = ["#2B3A8C", "#B97A12", "#1C8048", "#9AA3B5", "#BE3B26", "#2C64C2"]
+
+[theme.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F6F8FB"
 
 [server]
 headless = true

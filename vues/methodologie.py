@@ -85,6 +85,28 @@ période et jugés sur une seconde. La stratégie est comparée à des portefeui
 hasard dans le même univers : c'est le test le plus honnête, car sur un marché aussi étroit,
 beaucoup de méthodes ne font pas mieux que le hasard.
 
+### 8. Le rapport de recherche
+Pour chaque société, l'outil reprend les comptes des 5 derniers exercices publiés sur les
+fiches société de Sikafinance (chiffre d'affaires, résultat net, dividende par action, nombre de
+titres), relevés le 04/10/2026 et contrôlés : le résultat net divisé par le nombre de titres doit
+redonner le bénéfice par action affiché. À partir de là :
+- **PER** = cours / bénéfice par action du dernier exercice, comparé à la médiane du secteur ;
+- **soutenabilité du dividende** sur 10 : part du bénéfice distribuée, régularité, tendance des
+  résultats, absence de perte ;
+- **solidité** (faible, modérée, forte) : marge nette, constance des bénéfices, croissance du
+  chiffre d'affaires, stabilité de la marge. C'est une mesure chiffrée, pas un avis sur la
+  stratégie de l'entreprise ;
+- **risque** sur 10 : volatilité, pire repli, liquidité et fragilité des bénéfices, comparés aux
+  autres titres ;
+- **fourchette à 12 mois** : variations sur 12 mois réellement observées depuis 2016, appliquées
+  au cours du jour. Ce n'est pas un objectif de cours ;
+- **zone d'entrée et stop** : du cours actuel jusqu'à une baisse mensuelle ordinaire, stop au
+  niveau du stop suiveur de la stratégie.
+
+Le ratio dette / capitaux propres n'est pas publié par la source : il reste « n.d. » sauf si tu
+saisis les états financiers. Le top 10 dépend de ton profil (tolérance au risque, montant,
+horizon, secteurs) : les pondérations de chaque profil sont affichées en bas de la page.
+
 ### Ce que l'outil ne fait pas
 Il ne passe aucun ordre, ne prévoit pas l'avenir et ne remplace pas la lecture des états
 financiers ni l'avis d'un conseiller agréé.

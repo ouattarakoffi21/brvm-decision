@@ -185,3 +185,29 @@ def test_backtest_execute_le_lendemain_et_paie_les_frais(cfg):
     achat = res.operations[res.operations["sens"] == "achat"].iloc[0]
     assert achat["date"] > ctx["revisions"][0]      # jamais au cours de décision
     assert achat["frais"] > 0 and res.frais_totaux > 0
+
+
+def test_soutenabilite_et_solidite_suivent_les_regles():
+    from brvm import recherche
+    rn = pd.Series([100.0, 110.0, 120.0])
+    note, _ = recherche._note_soutenabilite(0.5, 1.0, rn, True)
+    assert note == 10  # 4 + 3 + 2 + 1
+    note, _ = recherche._note_soutenabilite(1.2, 0.0, pd.Series([100.0, 90.0, -5.0]), True)
+    assert note == 0
+    assert pd.isna(recherche._note_soutenabilite(np.nan, 0.0, rn, False)[0])
+    marges = pd.Series([0.20, 0.21, 0.20])
+    assert recherche._solidite(marges, rn, 0.08)[0] == "fort"
+    assert recherche._solidite(pd.Series([0.02, -0.01]), pd.Series([5.0, -1.0]), -0.1)[0] == "faible"
+
+
+def test_selection_profil_filtre_risque_et_secteur(cfg):
+    from brvm import recherche
+    df = pd.DataFrame({
+        "action": ["ACHAT", "ACHAT", "ÉCARTÉ"], "secteur": ["A", "B", "A"],
+        "risque": [3.0, 8.0, 1.0], "soutenabilite": [8.0, 8.0, 8.0], "score": [80, 90, 99],
+        "tcam_ca": [0.1, 0.2, 0.3], "momentum_6m": [0.1, 0.2, 0.3],
+        "montant_median_fcfa": [1e8, 1e8, 1e8]}, index=["X", "Y", "Z"])
+    profil = {"tolerance": "prudent", "montant_fcfa": 500_000, "horizon_mois": 36, "secteurs": []}
+    assert list(recherche.selection_profil(df, profil, cfg).index) == ["X"]  # Y trop risqué, Z écarté
+    profil.update(tolerance="dynamique", secteurs=["B"])
+    assert list(recherche.selection_profil(df, profil, cfg).index) == ["Y"]

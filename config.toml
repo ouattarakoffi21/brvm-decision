@@ -99,3 +99,12 @@ frequence = "trimestrielle"
 tirages_hasard = 100
 graine = 42
 delai_execution_max = 10
+
+[profil]
+# Profil d'investisseur utilisé par la page « Rapport de recherche »
+# tolerance : "prudent", "équilibré" ou "dynamique"
+tolerance = "équilibré"
+montant_fcfa = 500_000
+horizon_mois = 36
+# Secteurs préférés (liste vide = tous les secteurs)
+secteurs = []

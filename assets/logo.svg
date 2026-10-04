@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="250" height="44" viewBox="0 0 250 44">
+  <rect x="2" y="4" width="36" height="36" rx="9" fill="#2B3A8C"/>
+  <polyline points="9,30 16,22 22,26 31,14" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="31" cy="14" r="2.6" fill="#E2AA45"/>
+  <text x="48" y="24" textLength="150" lengthAdjust="spacingAndGlyphs" font-family="Arial Narrow, Roboto Condensed, Arial, sans-serif" font-weight="700" font-size="20" fill="#141B2D">BRVM DÉCISION</text>
+  <text x="48" y="38" font-family="Arial, sans-serif" font-size="10" fill="#5B6579">Aide à la décision · Matha</text>
+</svg>
